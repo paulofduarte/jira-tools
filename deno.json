@@ -1,0 +1,42 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "lib": [
+      "deno.ns",
+      "deno.unstable",
+      "esnext"
+    ],
+    "types": [
+      "deno.ns",
+      "deno.window"
+    ]
+  },
+  "tasks": {
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "test": "deno test --allow-env --allow-read --allow-write=./tmp --allow-run --unstable",
+    "jira": "deno run --allow-env --allow-net --allow-read --allow-write --unstable src/cli/jira.ts",
+    "jira-query": "deno run --allow-env --allow-net --allow-read --allow-write --unstable src/cli/jira-query.ts"
+  },
+  "imports": {
+    "@std/": "https://deno.land/std@0.224.0/",
+    "@cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.4/",
+    "@dotenv": "https://deno.land/std@0.224.0/dotenv/mod.ts",
+    "@jira": "npm:jira.js",
+    "@xlsx": "npm:xlsx"
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "proseWrap": "preserve"
+  },
+  "lint": {
+    "rules": {
+      "include": [
+        "recommended"
+      ]
+    }
+  }
+}

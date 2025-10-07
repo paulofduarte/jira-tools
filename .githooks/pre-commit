@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+run_deno() {
+  if command -v deno >/dev/null 2>&1; then
+    deno "$@"
+  elif command -v devbox >/dev/null 2>&1; then
+    devbox run deno "$@"
+  else
+    echo "Error: neither 'deno' nor 'devbox' is available in PATH." >&2
+    echo "Install Deno or run commits from within 'devbox shell'." >&2
+    exit 1
+  fi
+}
+
+echo "[hook] deno fmt --check"
+run_deno fmt --check
+
+echo "[hook] deno lint"
+run_deno lint
