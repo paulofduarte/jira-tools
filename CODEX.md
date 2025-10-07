@@ -1,12 +1,15 @@
 # Codex Generation Notes
 
+<!-- markdownlint-disable MD013 -->
+
 - **Generation date:** 2025-10-07 (UTC)
-- **AI model:** Codex CLI assistant (`gpt-5-codex-cli`, GPT-5 Codex family, build 2025-10-07), operated in the user's workspace.
+- **AI model:** Codex CLI assistant (`gpt-5-codex-cli`, GPT-5 Codex family, build 2025-10-07),
+  operated in the user's workspace.
 - **Project status:** Scaffolded and implemented according to the prompt below.
 
 ## Original Prompt
 
-```
+```text
 Let's start a project from scratch. I want to create a set of jira cli tools to help automating some tasks involving jira, mostly targeting at extracting data and reporting into it.
 
 The project needs to be implemented in typescript and run in a deno runtime. The reason for deno is that I intend to compile the cli tools into standalone executables in the future.
@@ -25,3 +28,5 @@ Create all the project scaffolding, the jira-query tool, README.md and AGENTS.md
 
 All dependencies and the evironment set must be on the latest released versions.
 ```
+
+<!-- markdownlint-enable MD013 -->

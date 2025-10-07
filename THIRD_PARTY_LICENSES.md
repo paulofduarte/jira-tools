@@ -1,17 +1,19 @@
 # Third-Party Licenses
 
-This project bundles or relies on the following third-party components. Their original license notices are reproduced here to comply with the respective terms.
+This project bundles or relies on the following third-party components. Their original
+license notices are reproduced here to comply with the respective terms.
 
 ## MIT Licensed Components
 
-The components below are distributed under the MIT License. The full license text follows this list.
+The components below are distributed under the MIT License. The full license text
+follows this list.
 
 - Deno Standard Library (`@std/*`)
 - Cliffy (`@cliffy/command`, `@cliffy/prompt`)
 - jira.js (`npm:jira.js`)
 - ExcelJS (`npm:exceljs`)
 
-```
+```text
 MIT License
 
 Copyright (c) the respective project authors
