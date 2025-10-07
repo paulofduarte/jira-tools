@@ -1,21 +1,9 @@
 import { stringify } from "@std/csv/stringify.ts";
 import type { JiraIssueData, JiraQueryResult } from "./types.ts";
 
-type ExcelJSWorksheet = {
-  columns: Array<{ header: string; key: string }>;
-  addRow(record: Record<string, unknown>): void;
-};
-
-type ExcelJSWorkbook = {
-  addWorksheet(name: string): ExcelJSWorksheet;
-  xlsx: {
-    writeBuffer(): Promise<ArrayBuffer | Uint8Array>;
-  };
-};
-
-type ExcelJSModule = {
-  Workbook: new () => ExcelJSWorkbook;
-};
+type ExcelJSImport = typeof import("@exceljs");
+type ExcelJSWorkbook = InstanceType<ExcelJSImport["Workbook"]>;
+type ExcelJSWorksheet = ReturnType<ExcelJSWorkbook["addWorksheet"]>;
 
 const DEFAULT_TEXT_SEPARATOR = "\n---\n";
 
@@ -162,11 +150,11 @@ function formatText(result: JiraQueryResult): FormatResult {
 async function formatExcel(result: JiraQueryResult): Promise<FormatResult> {
   const excelJSImport = await import("@exceljs");
   const ExcelJS =
-    ((excelJSImport as { default?: ExcelJSModule }).default ?? excelJSImport) as ExcelJSModule;
+    ((excelJSImport as { default?: ExcelJSImport }).default ?? excelJSImport) as ExcelJSImport;
   const records = buildRecords(result.issues);
   const headers = extractHeaders(records);
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("jira-query");
+  const workbook: ExcelJSWorkbook = new ExcelJS.Workbook();
+  const worksheet: ExcelJSWorksheet = workbook.addWorksheet("jira-query");
 
   worksheet.columns = headers.map((header) => ({
     header,

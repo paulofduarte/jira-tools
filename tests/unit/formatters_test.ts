@@ -2,33 +2,10 @@ import { assertEquals, assertExists, assertStringIncludes } from "@std/assert/mo
 import { formatQueryResult } from "../../src/lib/formatters.ts";
 import type { JiraQueryResult } from "../../src/lib/types.ts";
 
-type ExcelJSCell = {
-  value: unknown;
-};
-
-type ExcelJSRow = {
-  getCell(index: number): ExcelJSCell;
-};
-
-type ExcelJSWorksheet = {
-  columns: Array<{ header: string; key: string }>;
-  addRow(record: Record<string, unknown>): void;
-  getRow(index: number): ExcelJSRow;
-};
-
-type ExcelJSWorkbook = {
-  addWorksheet(name: string): ExcelJSWorksheet;
-  getWorksheet(name: string): ExcelJSWorksheet | undefined;
-  worksheets: ExcelJSWorksheet[];
-  xlsx: {
-    load(data: unknown): Promise<void>;
-    writeBuffer(): Promise<ArrayBuffer | Uint8Array>;
-  };
-};
-
-type ExcelJSModule = {
-  Workbook: new () => ExcelJSWorkbook;
-};
+type ExcelJSImport = typeof import("@exceljs");
+type ExcelJSWorkbook = InstanceType<ExcelJSImport["Workbook"]>;
+type ExcelJSWorksheet = ReturnType<ExcelJSWorkbook["addWorksheet"]>;
+type ExcelJSWorkbookLoadInput = Parameters<ExcelJSWorkbook["xlsx"]["load"]>[0];
 
 const resultFixture: JiraQueryResult = {
   issues: [
@@ -78,19 +55,19 @@ Deno.test("formatQueryResult produces Excel output", async () => {
   const formatted = await formatQueryResult(resultFixture, "excel");
   const excelJSImport = await import("@exceljs");
   const ExcelJS =
-    ((excelJSImport as { default?: ExcelJSModule }).default ?? excelJSImport) as ExcelJSModule;
+    ((excelJSImport as { default?: ExcelJSImport }).default ?? excelJSImport) as ExcelJSImport;
 
   assertEquals(formatted.fileExtension, "xlsx");
   assertEquals(formatted.contentType, "binary");
   const payload = formatted.payload as Uint8Array;
   assertExists(payload);
 
-  const workbook = new ExcelJS.Workbook();
+  const workbook: ExcelJSWorkbook = new ExcelJS.Workbook();
   const { Buffer: NodeBuffer } = await import("node:buffer");
   const buffer = NodeBuffer.from(payload);
-  await workbook.xlsx.load(buffer);
+  await workbook.xlsx.load(buffer as unknown as ExcelJSWorkbookLoadInput);
 
-  const sheet = workbook.getWorksheet("jira-query") ?? workbook.worksheets[0];
+  const sheet: ExcelJSWorksheet = workbook.getWorksheet("jira-query") ?? workbook.worksheets[0];
   const headerRow = sheet.getRow(1);
   assertEquals(headerRow.getCell(1).value, "key");
   assertEquals(headerRow.getCell(2).value, "summary");
