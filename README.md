@@ -71,6 +71,16 @@ Supported variables:
 
 Place them in a `.env` file or pass via the environment. Use `--env-file` to point at custom paths.
 
+### Generating Jira Credentials
+
+- **Jira API token (recommended for Atlassian Cloud):** Visit the [Atlassian API token management page](https://support.atlassian.com/atlassian-account/docs/create-and-manage-api-tokens-for-your-atlassian-account/), create a new token, then store it securely (for example in your shell configuration or `.env`). API tokens inherit the permissions of the Atlassian account, so make sure the account has at least _Browse Projects_ access to every project you plan to query.
+- **Jira Personal Access Token (Cloud):** Follow the official guide for [personal access tokens](https://support.atlassian.com/jira-software-cloud/docs/personal-access-tokens/) and grant only the scopes you need:
+  - *Classic scopes*: `read:jira-work` is sufficient for issue queries; add `read:jira-user` if you need assignee/user metadata.
+  - *Granular scopes*: choose the **Jira REST API (read)** preset or manually include `read:issue:jira` and `read:project:jira` (add `read:user:jira` when user details are required). Avoid broader scopes unless you truly need them.
+ - **Self-managed instances:** For Jira Data Center / Server, create a PAT from your profile or ask your administrator (see the [Data Center documentation](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)). Grant only the read scope required for issue search (`read`), and avoid falling back to username/password unless strictly necessary.
+
+After creating a token, export it as `JIRA_API_TOKEN` (or `JIRA_PERSONAL_ACCESS_TOKEN`) before running the CLI, or provide it interactively with the corresponding flag (`--api-token`/`--personal-access-token`).
+
 ### Autocompletion
 
 Generate shell completions through the embedded command:
