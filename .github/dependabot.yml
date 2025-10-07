@@ -10,13 +10,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    registries:
-      - npmjs
     allow:
       - dependency-name: "jira.js"
       - dependency-name: "xlsx"
-
-registries:
-  npmjs:
-    type: npm-registry
-    url: https://registry.npmjs.org
