@@ -15,10 +15,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Devbox environment
-        uses: jetify-com/devbox-action@v0.5.0
-        with:
-          project-path: .
+      - name: Install Devbox
+        run: |
+          curl -fsSL https://get.jetify.com/devbox | bash -s -- -b "$HOME/.devbox/bin"
+          echo "$HOME/.devbox/bin" >> "$GITHUB_PATH"
+
+      - name: Prepare Devbox environment
+        run: devbox install
 
       - name: Format
         run: devbox run -- deno fmt --check
