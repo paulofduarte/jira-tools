@@ -25,15 +25,6 @@ jobs:
       - name: Prepare Devbox environment
         run: devbox install
 
-      - name: Format
-        run: devbox run -- deno fmt --check
-
-      - name: Lint
-        run: devbox run -- deno lint
-
-      - name: Test
-        run: devbox run -- deno task test
-
       - name: Generate SPDX SBOM
         run: devbox run -- deno task sbom -- --output sbom.spdx.json
 
@@ -42,3 +33,12 @@ jobs:
         with:
           filePath: .
           filePattern: sbom.spdx.json
+
+      - name: Format
+        run: devbox run -- deno fmt --check
+
+      - name: Lint
+        run: devbox run -- deno lint
+
+      - name: Test
+        run: devbox run -- deno task test
