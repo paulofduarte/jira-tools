@@ -29,11 +29,5 @@
     "lineWidth": 100,
     "proseWrap": "preserve"
   },
-  "lint": {
-    "rules": {
-      "include": [
-        "recommended"
-      ]
-    }
-  }
+  "lint": {}
 }
