@@ -4,7 +4,6 @@ import type {
   JiraQueryResult,
   JiraSearchAdapter,
   JiraSearchRequest,
-  JiraSearchResponse,
 } from "./types.ts";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -44,18 +43,6 @@ function createSearchRequest(
 }
 
 /**
- * Aggregates paginated Jira search results into a single response.
- */
-function appendPage(
-  accumulator: JiraIssueData[],
-  response: JiraSearchResponse,
-): JiraIssueData[] {
-  const issueData = response.issues.map(toIssueData);
-  accumulator.push(...issueData);
-  return accumulator;
-}
-
-/**
  * Provides high-level helpers to run paginated Jira JQL queries.
  */
 export class JiraQueryService {
@@ -70,7 +57,6 @@ export class JiraQueryService {
     }
 
     const limit = Math.max(options.maxResults ?? DEFAULT_PAGE_SIZE, 1);
-    let fetched = 0;
     let total = 0;
     let startAt = 0;
     const issues: JiraIssueData[] = [];
@@ -81,17 +67,21 @@ export class JiraQueryService {
       expand: options.expand,
     };
 
-    while (fetched < limit) {
-      const request = createSearchRequest(baseRequest, startAt, limit - fetched);
+    while (issues.length < limit) {
+      const remainingCapacity = limit - issues.length;
+      const request = createSearchRequest(baseRequest, startAt, remainingCapacity);
       const page = await this.adapter.search(request);
-      appendPage(issues, page);
+      const pageIssues = Array.isArray(page.issues) ? page.issues : [];
+      const normalized = pageIssues.slice(0, remainingCapacity).map(toIssueData);
+      issues.push(...normalized);
 
-      fetched += page.issues.length;
-      total = page.total;
-      startAt = page.startAt + page.issues.length;
+      total = typeof page.total === "number" ? page.total : total;
+      const consumed = pageIssues.length;
+      startAt = (typeof page.startAt === "number" ? page.startAt : request.startAt) +
+        consumed;
 
-      const reachedTotal = startAt >= total;
-      const noResults = page.issues.length === 0;
+      const reachedTotal = typeof total === "number" && startAt >= total;
+      const noResults = pageIssues.length === 0;
 
       if (reachedTotal || noResults) {
         break;

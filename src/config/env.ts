@@ -1,5 +1,5 @@
 import { exists } from "@std/fs/exists.ts";
-import { config as loadDotEnv } from "@dotenv";
+import { load } from "@dotenv";
 
 /**
  * Loads environment variables from the provided file when available.
@@ -9,7 +9,7 @@ export async function loadEnvironment(path = ".env"): Promise<void> {
     return;
   }
 
-  await loadDotEnv({ path, export: true });
+  await load({ envPath: path, export: true });
 }
 
 /**

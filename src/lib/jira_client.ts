@@ -7,22 +7,26 @@ import type {
   JiraSearchResponse,
 } from "./types.ts";
 
+type JiraJsAuthentication = NonNullable<
+  ConstructorParameters<typeof Version3Client>[0]["authentication"]
+>;
+
 /**
  * Normalizes jira.js authentication options to guard against future API changes.
  */
-function buildAuthentication(authentication: JiraAuthentication) {
+function buildAuthentication(authentication: JiraAuthentication): JiraJsAuthentication {
   if (authentication.type === "basic") {
     return {
       basic: {
         email: authentication.email,
         apiToken: authentication.apiToken,
       },
-    };
+    } satisfies JiraJsAuthentication;
   }
 
   return {
     personalAccessToken: authentication.token,
-  };
+  } as unknown as JiraJsAuthentication;
 }
 
 /**
@@ -54,12 +58,20 @@ export function createJiraSearchAdapter(
       const response = await client.issueSearch.searchForIssuesUsingJql(createSearchPayload(
         request,
       ));
+      const issues = Array.isArray(response.issues)
+        ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
+        : [];
+      const total = typeof response.total === "number" ? response.total : issues.length;
+      const startAt = typeof response.startAt === "number" ? response.startAt : request.startAt;
+      const maxResults = typeof response.maxResults === "number"
+        ? response.maxResults
+        : issues.length;
 
       return {
-        issues: response.issues as Record<string, unknown>[],
-        total: response.total ?? response.issues.length,
-        startAt: response.startAt ?? 0,
-        maxResults: response.maxResults ?? response.issues.length,
+        issues,
+        total,
+        startAt,
+        maxResults,
       };
     },
   };

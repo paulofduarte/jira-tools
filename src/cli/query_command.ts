@@ -42,7 +42,7 @@ export interface QueryCommandDependencies {
   createAdapter?: (
     options: Parameters<typeof createJiraSearchAdapter>[0],
   ) => JiraSearchAdapter;
-  createService?: (adapter: JiraSearchAdapter) => JiraQueryService;
+  createService?: (adapter: JiraSearchAdapter) => Pick<JiraQueryService, "runQuery">;
   formatResult?: (
     result: JiraQueryResult,
     format: OutputFormat,
@@ -132,14 +132,14 @@ function resolveOutputPath(
  */
 export function createQueryCommand(
   dependencies: QueryCommandDependencies = {},
-): Command {
+) {
   const {
     loadEnv = loadEnvironment,
     createAdapter = createJiraSearchAdapter,
     createService = (adapter: JiraSearchAdapter) => new JiraQueryService(adapter),
     formatResult = formatQueryResult,
     writeStdout = writeToStdout,
-    writeFileFn = writeToFile,
+    writeFile = writeToFile,
     now = () => Date.now(),
   } = dependencies;
 
@@ -188,11 +188,10 @@ export function createQueryCommand(
       "Maximum number of issues to fetch (defaults to 50).",
       {
         value: (value) => {
-          const parsed = Number.parseInt(value, 10);
-          if (Number.isNaN(parsed) || parsed <= 0) {
+          if (value <= 0) {
             throw new Error("--max-results must be a positive number.");
           }
-          return parsed;
+          return value;
         },
       },
     )
@@ -267,7 +266,7 @@ export function createQueryCommand(
       }
 
       if (outputPath) {
-        await writeFileFn(formatted, outputPath);
+        await writeFile(formatted, outputPath);
         console.error(`Saved output to ${outputPath}`);
       }
     });

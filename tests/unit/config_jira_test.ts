@@ -10,7 +10,9 @@ Deno.test("resolveJiraClientOptions prefers personal access token when provided"
   });
 
   assertEquals(options.authentication.type, "pat");
-  assertEquals(options.authentication.token, "pat-token");
+  if (options.authentication.type === "pat") {
+    assertEquals(options.authentication.token, "pat-token");
+  }
 });
 
 Deno.test("resolveJiraClientOptions falls back to basic auth when PAT is absent", () => {
@@ -21,8 +23,10 @@ Deno.test("resolveJiraClientOptions falls back to basic auth when PAT is absent"
   });
 
   assertEquals(options.authentication.type, "basic");
-  assertEquals(options.authentication.email, "user@example.com");
-  assertEquals(options.authentication.apiToken, "api-token");
+  if (options.authentication.type === "basic") {
+    assertEquals(options.authentication.email, "user@example.com");
+    assertEquals(options.authentication.apiToken, "api-token");
+  }
 });
 
 Deno.test("resolveJiraClientOptions reads credentials from environment variables", () => {
@@ -34,8 +38,10 @@ Deno.test("resolveJiraClientOptions reads credentials from environment variables
     const options = resolveJiraClientOptions({});
     assertEquals(options.host, "https://env.atlassian.net");
     assertEquals(options.authentication.type, "basic");
-    assertEquals(options.authentication.email, "env@example.com");
-    assertEquals(options.authentication.apiToken, "env-token");
+    if (options.authentication.type === "basic") {
+      assertEquals(options.authentication.email, "env@example.com");
+      assertEquals(options.authentication.apiToken, "env-token");
+    }
   } finally {
     Deno.env.delete("JIRA_HOST");
     Deno.env.delete("JIRA_EMAIL");

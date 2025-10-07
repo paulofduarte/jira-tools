@@ -48,7 +48,8 @@ Deno.test("writeToStdout writes binary payloads", async () => {
 });
 
 Deno.test("writeToFile persists text and binary payloads", async () => {
-  const tempDir = await Deno.makeTempDir();
+  await Deno.mkdir("./tmp/output-writer-tests", { recursive: true });
+  const tempDir = await Deno.makeTempDir({ dir: "./tmp/output-writer-tests" });
   const textPath = `${tempDir}/text.txt`;
   const binPath = `${tempDir}/binary.bin`;
 

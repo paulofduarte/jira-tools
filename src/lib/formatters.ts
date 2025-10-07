@@ -1,4 +1,4 @@
-import { stringify } from "@std/csv/stringify";
+import { stringify } from "@std/csv/stringify.ts";
 import type { JiraIssueData, JiraQueryResult } from "./types.ts";
 
 const DEFAULT_TEXT_SEPARATOR = "\n---\n";
@@ -105,11 +105,8 @@ function formatJson(result: JiraQueryResult): FormatResult {
 async function formatCsv(result: JiraQueryResult): Promise<FormatResult> {
   const records = buildRecords(result.issues);
   const headers = extractHeaders(records);
-  const rows = records.map((record) =>
-    headers.map((header) => simplifyValue(record[header]) ?? "")
-  );
 
-  const payload = await stringify(rows, { columns: headers, header: true });
+  const payload = await stringify(records, { columns: headers, headers: true });
 
   return {
     payload,
