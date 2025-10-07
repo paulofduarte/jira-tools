@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    registries:
+      - npmjs
+    allow:
+      - dependency-name: "jira.js"
+      - dependency-name: "xlsx"
+
+registries:
+  npmjs:
+    type: npm-registry
+    url: https://registry.npmjs.org
