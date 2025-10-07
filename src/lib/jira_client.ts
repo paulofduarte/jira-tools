@@ -9,6 +9,12 @@ import type {
 
 type Logger = Pick<Console, "error"> & Partial<Pick<Console, "debug" | "info" | "log">>;
 
+type EnhancedSearchResponse = {
+  issues?: Array<Record<string, unknown>>;
+  nextPageToken?: string | null;
+  total?: number;
+};
+
 export interface JiraSearchAdapterOptions {
   readonly verbose?: boolean;
   readonly logger?: Logger;
@@ -39,16 +45,6 @@ function buildAuthentication(authentication: JiraAuthentication): JiraJsAuthenti
 /**
  * Translates a high-level search request into the structure expected by jira.js.
  */
-function createSearchPayload(request: JiraSearchRequest) {
-  return {
-    jql: request.jql,
-    startAt: request.startAt,
-    maxResults: request.maxResults,
-    fields: request.fields ? [...request.fields] : undefined,
-    expand: request.expand ? [...request.expand] : undefined,
-  };
-}
-
 /**
  * Creates a Jira search adapter backed by jira.js' Version 3 client.
  */
@@ -81,17 +77,20 @@ export function createJiraSearchAdapter(
       }
 
       try {
-        const response = await client.issueSearch.searchForIssuesUsingJql(createSearchPayload(
-          request,
-        ));
+        const response = await client.issueSearch.searchForIssuesUsingJqlEnhancedSearch({
+          jql: request.jql,
+          fields: request.fields ? [...request.fields] : undefined,
+          expand: request.expand ? request.expand.join(",") : undefined,
+          maxResults: request.maxResults,
+          nextPageToken: request.nextPageToken ?? undefined,
+          failFast: true,
+        }) as unknown as EnhancedSearchResponse;
         const issues = Array.isArray(response.issues)
           ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
           : [];
         const total = typeof response.total === "number" ? response.total : issues.length;
-        const startAt = typeof response.startAt === "number" ? response.startAt : request.startAt;
-        const maxResults = typeof response.maxResults === "number"
-          ? response.maxResults
-          : issues.length;
+        const startAt = request.startAt;
+        const maxResults = request.maxResults;
 
         if (adapterOptions.verbose) {
           log.call(
@@ -102,6 +101,7 @@ export function createJiraSearchAdapter(
               fetched: issues.length,
               startAt,
               maxResults,
+              nextPageToken: response.nextPageToken ?? null,
             },
           );
         }
@@ -111,6 +111,7 @@ export function createJiraSearchAdapter(
           total,
           startAt,
           maxResults,
+          nextPageToken: response.nextPageToken ?? null,
         };
       } catch (error) {
         if (adapterOptions.verbose) {

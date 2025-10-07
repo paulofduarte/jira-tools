@@ -29,9 +29,10 @@ function toIssueData(issue: Record<string, unknown>): JiraIssueData {
  * Calculates the next page parameters to be sent to Jira.
  */
 function createSearchRequest(
-  adapterRequest: Omit<JiraSearchRequest, "startAt" | "maxResults">,
+  adapterRequest: Omit<JiraSearchRequest, "startAt" | "maxResults" | "nextPageToken">,
   startAt: number,
   remaining: number,
+  nextPageToken?: string | null,
 ): JiraSearchRequest {
   const maxResults = Math.min(API_PAGE_LIMIT, remaining);
 
@@ -39,6 +40,7 @@ function createSearchRequest(
     ...adapterRequest,
     startAt,
     maxResults,
+    nextPageToken,
   };
 }
 
@@ -59,9 +61,10 @@ export class JiraQueryService {
     const limit = Math.max(options.maxResults ?? DEFAULT_PAGE_SIZE, 1);
     let total = 0;
     let startAt = 0;
+    let nextPageToken: string | null | undefined = undefined;
     const issues: JiraIssueData[] = [];
 
-    const baseRequest: Omit<JiraSearchRequest, "startAt" | "maxResults"> = {
+    const baseRequest: Omit<JiraSearchRequest, "startAt" | "maxResults" | "nextPageToken"> = {
       jql: options.jql,
       fields: options.fields,
       expand: options.expand,
@@ -69,21 +72,26 @@ export class JiraQueryService {
 
     while (issues.length < limit) {
       const remainingCapacity = limit - issues.length;
-      const request = createSearchRequest(baseRequest, startAt, remainingCapacity);
+      const request = createSearchRequest(
+        baseRequest,
+        startAt,
+        remainingCapacity,
+        nextPageToken ?? undefined,
+      );
       const page = await this.adapter.search(request);
       const pageIssues = Array.isArray(page.issues) ? page.issues : [];
       const normalized = pageIssues.slice(0, remainingCapacity).map(toIssueData);
       issues.push(...normalized);
 
-      total = typeof page.total === "number" ? page.total : total;
+      total = typeof page.total === "number" ? page.total : (total || issues.length);
       const consumed = pageIssues.length;
-      startAt = (typeof page.startAt === "number" ? page.startAt : request.startAt) +
-        consumed;
+      startAt = (typeof page.startAt === "number" ? page.startAt : request.startAt) + consumed;
+      nextPageToken = page.nextPageToken ?? null;
 
-      const reachedTotal = typeof total === "number" && startAt >= total;
       const noResults = pageIssues.length === 0;
+      const hasMore = nextPageToken !== null && nextPageToken !== undefined;
 
-      if (reachedTotal || noResults) {
+      if (!hasMore || noResults) {
         break;
       }
     }

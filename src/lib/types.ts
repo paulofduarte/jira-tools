@@ -66,6 +66,7 @@ export interface JiraSearchResponse {
   readonly total: number;
   readonly startAt: number;
   readonly maxResults: number;
+  readonly nextPageToken?: string | null;
 }
 
 /**
@@ -77,6 +78,7 @@ export interface JiraSearchRequest {
   readonly startAt: number;
   readonly maxResults: number;
   readonly expand?: readonly string[];
+  readonly nextPageToken?: string | null;
 }
 
 /**

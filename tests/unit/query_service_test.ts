@@ -27,6 +27,7 @@ function createAdapter(
       return Promise.resolve({
         ...response,
         startAt: request.startAt,
+        nextPageToken: response.nextPageToken ?? null,
       });
     },
   };
@@ -39,12 +40,14 @@ Deno.test("JiraQueryService aggregates paginated results", async () => {
       total: 3,
       startAt: 0,
       maxResults: 2,
+      nextPageToken: "token-1",
     },
     {
       issues: [createIssue("TEST-3")],
       total: 3,
       startAt: 2,
       maxResults: 1,
+      nextPageToken: null,
     },
   ]);
 
@@ -70,12 +73,14 @@ Deno.test("JiraQueryService respects maxResults limit", async () => {
       total: 5,
       startAt: 0,
       maxResults: 2,
+      nextPageToken: "token-1",
     },
     {
       issues: [createIssue("TEST-3"), createIssue("TEST-4")],
       total: 5,
       startAt: 2,
       maxResults: 2,
+      nextPageToken: null,
     },
   ]);
 
