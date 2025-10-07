@@ -16,9 +16,10 @@ This project is intentionally structured to make it easy for autonomous or semi-
 4. For end-to-end scenarios, place tests in `tests/integration` and rely on dependency injection to avoid hitting external services.
 5. Run `deno task fmt` before opening a PR to ensure consistent formatting.
 6. Whenever you add a dependency, run a license scan (e.g. via `deno info` or your preferred SBOM tool) to confirm compatibility with MIT. If the library is acceptable, record its notice in `THIRD_PARTY_LICENSES.md`; if it is not, replace it before merging.
-7. When Codex is used for major functionality or refactors, record the full prompt, precise timestamp, and complete model identifier (include version tag/build) in `CODEX.md` so provenance stays up to date.
-8. Whenever a timestamp is needed, obtain it through an agent action (e.g. invoking `date` in the workspace) rather than hard-coding or estimating.
-9. If CLI usage, commands, or flags change, immediately update `README.md` so documentation stays in sync with the tooling.
+7. Always run `devbox` commands from the repository root so the generated `devbox.lock` stays consistent, and commit the lockfile with your changes.
+8. When Codex is used for major functionality or refactors, record the full prompt, precise timestamp, and complete model identifier (include version tag/build) in `CODEX.md` so provenance stays up to date.
+9. Whenever a timestamp is needed, obtain it through an agent action (e.g. invoking `date` in the workspace) rather than hard-coding or estimating.
+10. If CLI usage, commands, or flags change, immediately update `README.md` so documentation stays in sync with the tooling.
 
 ## Adding Commands
 

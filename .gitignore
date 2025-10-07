@@ -2,7 +2,6 @@
 .env.*
 .DS_Store
 .devbox
-devbox.lock
 node_modules/
 tmp/
 dist/
