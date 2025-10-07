@@ -1,6 +1,22 @@
 import { stringify } from "@std/csv/stringify.ts";
 import type { JiraIssueData, JiraQueryResult } from "./types.ts";
 
+type ExcelJSWorksheet = {
+  columns: Array<{ header: string; key: string }>;
+  addRow(record: Record<string, unknown>): void;
+};
+
+type ExcelJSWorkbook = {
+  addWorksheet(name: string): ExcelJSWorksheet;
+  xlsx: {
+    writeBuffer(): Promise<ArrayBuffer | Uint8Array>;
+  };
+};
+
+type ExcelJSModule = {
+  Workbook: new () => ExcelJSWorkbook;
+};
+
 const DEFAULT_TEXT_SEPARATOR = "\n---\n";
 
 export type OutputFormat = "json" | "csv" | "text" | "excel";
@@ -144,14 +160,25 @@ function formatText(result: JiraQueryResult): FormatResult {
  * Formats the query result as an Excel workbook.
  */
 async function formatExcel(result: JiraQueryResult): Promise<FormatResult> {
-  const { utils, write } = await import("@xlsx");
+  const excelJSImport = await import("@exceljs");
+  const ExcelJS =
+    ((excelJSImport as { default?: ExcelJSModule }).default ?? excelJSImport) as ExcelJSModule;
   const records = buildRecords(result.issues);
-  const worksheet = utils.json_to_sheet(records);
-  const workbook = utils.book_new();
-  utils.book_append_sheet(workbook, worksheet, "jira-query");
+  const headers = extractHeaders(records);
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("jira-query");
 
-  const arrayBuffer = write(workbook, { bookType: "xlsx", type: "array" });
-  const payload = new Uint8Array(arrayBuffer);
+  worksheet.columns = headers.map((header) => ({
+    header,
+    key: header,
+  }));
+
+  for (const record of records) {
+    worksheet.addRow(record);
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const payload = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
 
   return {
     payload,

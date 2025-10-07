@@ -22,7 +22,7 @@
     "@cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.4/",
     "@dotenv": "https://deno.land/std@0.224.0/dotenv/mod.ts",
     "@jira": "npm:jira.js",
-    "@xlsx": "npm:xlsx"
+    "@exceljs": "npm:exceljs"
   },
   "fmt": {
     "useTabs": false,
