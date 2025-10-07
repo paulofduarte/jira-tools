@@ -1,4 +1,4 @@
-# Jira Tools (Deno)
+# Jira Tools
 
 CLI utilities for automating Jira workflows with a modern Deno + TypeScript stack. The toolkit is designed as a reusable library plus thin CLI wrappers so future commands can be added quickly. Generated with Codex – see [`CODEX.md`](CODEX.md) for generation details.
 
