@@ -33,6 +33,7 @@ interface QueryOptions {
   outputDir?: string;
   envFile?: string;
   noStdout?: boolean;
+  verbose?: boolean;
 }
 
 const FORMAT_COMPLETIONS = ["json", "csv", "text", "excel"];
@@ -41,6 +42,7 @@ export interface QueryCommandDependencies {
   loadEnv?: (path?: string) => Promise<void>;
   createAdapter?: (
     options: Parameters<typeof createJiraSearchAdapter>[0],
+    config?: Parameters<typeof createJiraSearchAdapter>[1],
   ) => JiraSearchAdapter;
   createService?: (adapter: JiraSearchAdapter) => Pick<JiraQueryService, "runQuery">;
   formatResult?: (
@@ -50,6 +52,8 @@ export interface QueryCommandDependencies {
   writeStdout?: (result: FormatResult) => Promise<void>;
   writeFile?: (result: FormatResult, path: string) => Promise<void>;
   now?: () => number;
+  logger?: Pick<Console, "error"> & Partial<Pick<Console, "debug" | "info" | "log">>;
+  exit?: (code: number) => never;
 }
 
 /**
@@ -141,6 +145,8 @@ export function createQueryCommand(
     writeStdout = writeToStdout,
     writeFile = writeToFile,
     now = () => Date.now(),
+    logger = console,
+    exit = (code: number) => Deno.exit(code),
   } = dependencies;
 
   return new Command()
@@ -213,6 +219,11 @@ export function createQueryCommand(
       "--no-stdout",
       "Do not print the output to STDOUT (useful when only saving to files).",
     )
+    .option(
+      "-v, --verbose",
+      "Enable verbose logging of Jira API calls and include stack traces on failure.",
+      { default: false },
+    )
     .complete("format", () => FORMAT_COMPLETIONS)
     .action(async (options: QueryOptions) => {
       await loadEnv(options.envFile ?? ".env");
@@ -247,27 +258,41 @@ export function createQueryCommand(
         expand: options.expand,
       });
 
-      const adapter = createAdapter(clientOptions);
-      const service = createService(adapter);
-      const result = await service.runQuery(queryOptions);
-      const formatted = await formatResult(result, options.format);
+      try {
+        const adapter = createAdapter(clientOptions, {
+          verbose: options.verbose,
+          logger,
+        });
+        const service = createService(adapter);
+        const result = await service.runQuery(queryOptions);
+        const formatted = await formatResult(result, options.format);
 
-      const outputPath = resolveOutputPath(
-        options,
-        formatted.fileExtension,
-        now,
-      );
+        const outputPath = resolveOutputPath(
+          options,
+          formatted.fileExtension,
+          now,
+        );
 
-      if (!options.noStdout) {
-        await writeStdout(formatted);
-        if (formatted.contentType === "text") {
-          await Deno.stdout.write(new TextEncoder().encode("\n"));
+        if (!options.noStdout) {
+          await writeStdout(formatted);
+          if (formatted.contentType === "text") {
+            await Deno.stdout.write(new TextEncoder().encode("\n"));
+          }
         }
-      }
 
-      if (outputPath) {
-        await writeFile(formatted, outputPath);
-        console.error(`Saved output to ${outputPath}`);
+        if (outputPath) {
+          await writeFile(formatted, outputPath);
+          const logInfo = logger.info ?? logger.debug ?? logger.error;
+          logInfo.call(logger, `Saved output to ${outputPath}`);
+        }
+      } catch (error) {
+        if (options.verbose) {
+          logger.error("[jira-tools] Command failed", error);
+        } else {
+          const message = error instanceof Error ? error.message : String(error);
+          logger.error(`Error: ${message}`);
+        }
+        exit(1);
       }
     });
 }

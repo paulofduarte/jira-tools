@@ -7,6 +7,13 @@ import type {
   JiraSearchResponse,
 } from "./types.ts";
 
+type Logger = Pick<Console, "error"> & Partial<Pick<Console, "debug" | "info" | "log">>;
+
+export interface JiraSearchAdapterOptions {
+  readonly verbose?: boolean;
+  readonly logger?: Logger;
+}
+
 type JiraJsAuthentication = NonNullable<
   ConstructorParameters<typeof Version3Client>[0]["authentication"]
 >;
@@ -47,32 +54,70 @@ function createSearchPayload(request: JiraSearchRequest) {
  */
 export function createJiraSearchAdapter(
   options: JiraClientOptions,
+  adapterOptions: JiraSearchAdapterOptions = {},
 ): JiraSearchAdapter {
   const client = new Version3Client({
     host: options.host,
     authentication: buildAuthentication(options.authentication),
   });
+  const logger = adapterOptions.logger ?? console;
 
   return {
     async search(request: JiraSearchRequest): Promise<JiraSearchResponse> {
-      const response = await client.issueSearch.searchForIssuesUsingJql(createSearchPayload(
-        request,
-      ));
-      const issues = Array.isArray(response.issues)
-        ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
-        : [];
-      const total = typeof response.total === "number" ? response.total : issues.length;
-      const startAt = typeof response.startAt === "number" ? response.startAt : request.startAt;
-      const maxResults = typeof response.maxResults === "number"
-        ? response.maxResults
-        : issues.length;
+      const log = logger.debug ?? logger.info ?? logger.error;
 
-      return {
-        issues,
-        total,
-        startAt,
-        maxResults,
-      };
+      if (adapterOptions.verbose) {
+        log.call(
+          logger,
+          "[jira-tools] Sending JQL request",
+          {
+            jql: request.jql,
+            fields: request.fields,
+            expand: request.expand,
+            startAt: request.startAt,
+            maxResults: request.maxResults,
+          },
+        );
+      }
+
+      try {
+        const response = await client.issueSearch.searchForIssuesUsingJql(createSearchPayload(
+          request,
+        ));
+        const issues = Array.isArray(response.issues)
+          ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
+          : [];
+        const total = typeof response.total === "number" ? response.total : issues.length;
+        const startAt = typeof response.startAt === "number" ? response.startAt : request.startAt;
+        const maxResults = typeof response.maxResults === "number"
+          ? response.maxResults
+          : issues.length;
+
+        if (adapterOptions.verbose) {
+          log.call(
+            logger,
+            "[jira-tools] Received JQL response",
+            {
+              total,
+              fetched: issues.length,
+              startAt,
+              maxResults,
+            },
+          );
+        }
+
+        return {
+          issues,
+          total,
+          startAt,
+          maxResults,
+        };
+      } catch (error) {
+        if (adapterOptions.verbose) {
+          logger.error("[jira-tools] JQL request failed", error);
+        }
+        throw error;
+      }
     },
   };
 }

@@ -11,6 +11,7 @@ export type {
   JiraSearchResponse,
 } from "./lib/types.ts";
 export { createJiraSearchAdapter } from "./lib/jira_client.ts";
+export type { JiraSearchAdapterOptions } from "./lib/jira_client.ts";
 export { JiraQueryService } from "./lib/query_service.ts";
 export {
   type FormatMetadata,

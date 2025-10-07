@@ -8,6 +8,7 @@ CLI utilities for automating Jira workflows with a modern Deno + TypeScript stac
 - `jira` umbrella command with subcommands plus standalone binaries such as `jira-query`.
 - Formats: JSON (default), CSV, text, and Excel (`.xlsx`) with optional file output.
 - Secure credential handling via environment variables, `.env` files, CLI flags, or interactive hidden prompts.
+- Verbose mode (`--verbose`) to log Jira API traffic and surface stack traces when troubleshooting.
 - Autocompletion generation for popular shells.
 - Comprehensive unit and integration test coverage with Deno’s built-in test runner.
 
@@ -53,10 +54,11 @@ deno task jira query \
   --api-token your-token \
   --jql "project = ENG ORDER BY created DESC" \
   --format csv \
-  --output reports/eng-recent
+  --output reports/eng-recent \\
+  --verbose
 ```
 
-The command prints the output to STDOUT (unless `--no-stdout` is set) and saves an appropriately named file when `--output` or `--output-dir` is provided. For sensitive values you can omit the flag value to be prompted securely (e.g. `--api-token`).
+The command prints the output to STDOUT (unless `--no-stdout` is set) and saves an appropriately named file when `--output` or `--output-dir` is provided. Use `--verbose` to stream Jira request/response metadata and keep stack traces for failing calls. For sensitive values you can omit the flag value to be prompted securely (e.g. `--api-token`).
 
 ### Environment Variables & `.env`
 
