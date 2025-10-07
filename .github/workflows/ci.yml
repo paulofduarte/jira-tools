@@ -17,8 +17,7 @@ jobs:
 
       - name: Install Devbox
         run: |
-          curl -fsSL https://get.jetify.com/devbox | bash -s -- -b "$HOME/.devbox/bin"
-          echo "$HOME/.devbox/bin" >> "$GITHUB_PATH"
+          curl -fsSL https://get.jetify.com/devbox | bash -s -- -f
 
       - name: Prepare Devbox environment
         run: devbox install
