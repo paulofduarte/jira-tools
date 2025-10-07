@@ -85,6 +85,7 @@ Replace `bash` with `zsh`, `fish`, etc. per your shell’s installation guidance
 deno task lint
 deno task fmt
 deno task test
+deno task sbom   # generates sbom.spdx.json from deno.lock
 ```
 
 Unit and integration tests stub external dependencies, so the suite runs offline.
@@ -101,7 +102,7 @@ Commits will now run `deno fmt --check` and `deno lint` automatically (using `de
 
 ## Continuous Integration
 
-GitHub Actions (see `.github/workflows/ci.yml`) run linting, formatting, and the full test suite on every push/PR.
+GitHub Actions (see `.github/workflows/ci.yml`) run linting, formatting, the sbom generator, and the full test suite on every push/PR, then submit the resulting SPDX file to GitHub’s dependency graph.
 
 ## Future Work
 

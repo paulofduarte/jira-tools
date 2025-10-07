@@ -11,6 +11,9 @@ on:
 jobs:
   deno:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,3 +33,12 @@ jobs:
 
       - name: Test
         run: devbox run -- deno task test
+
+      - name: Generate SPDX SBOM
+        run: devbox run -- deno task sbom -- --output sbom.spdx.json
+
+      - name: Submit dependency snapshot
+        uses: advanced-security/spdx-dependency-submission-action@v0.1
+        with:
+          filePath: .
+          filePattern: sbom.spdx.json
