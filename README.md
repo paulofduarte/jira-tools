@@ -19,7 +19,7 @@ details.
 
 ## Prerequisites
 
-1. Install [Jetify Devbox](https://www.jetify.com/devbox/docs/install) (ensures a consistent development environment).
+1. Install [Jetify Devbox](https://www.jetify.com/docs/devbox/install) (ensures a consistent development environment).
 2. Clone this repository and enter the project directory.
 3. Start a shell in the project environment:
 
@@ -86,12 +86,12 @@ Place them in a `.env` file or pass via the environment. Use `--env-file` to poi
 
 ### Generating Jira Credentials
 
-- **Jira API token (recommended for Atlassian Cloud):** Visit the [Atlassian API token management page](https://support.atlassian.com/atlassian-account/docs/create-and-manage-api-tokens-for-your-atlassian-account/),
+- **Jira API token (recommended for Atlassian Cloud):** Visit the [Atlassian API token management page](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/),
   create a new token, then store it securely (for example in your shell configuration or
   `.env`). API tokens inherit the permissions of the Atlassian account, so make sure the
   account has at least _Browse Projects_ access to every project you plan to query.
 - **Jira Personal Access Token (Cloud):** Follow the official guide for
-  [personal access tokens](https://support.atlassian.com/jira-software-cloud/docs/personal-access-tokens/)
+  [personal access tokens](https://support.atlassian.com/jira-cloud-administration/docs/create-personal-access-tokens/)
   and grant only the scopes you need:
   - _Classic scopes_: `read:jira-work` is sufficient for issue queries; add `read:jira-user`
     if you need assignee/user metadata.

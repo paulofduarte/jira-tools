@@ -32,6 +32,8 @@ semi-autonomous agents to extend the Jira tooling library.
     `date` in the workspace) rather than hard-coding or estimating.
 11. If CLI usage, commands, or flags change, immediately update `README.md` so
     documentation stays in sync with the tooling.
+12. When adding documentation, double-check external links (curl the URL or use a
+    browser) to ensure they are reachable and current before committing.
 
 ## Adding Commands
 
