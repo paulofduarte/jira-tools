@@ -45,14 +45,28 @@ tests/
 
 ## Usage
 
-Run commands through Deno or add them to your path once compiled.
+When you enter `devbox shell`, the repository’s `.bin` directory is added to your `PATH`
+so the wrapped CLI scripts are available immediately.
 
 ### View CLI Help
 
 ```bash
-deno task jira -- --help
-deno task jira-query -- --help
+devbox shell
+jira --help
+jira query --help
+jira-query --help
 ```
+
+Outside a `devbox` shell (or in other environments) you can invoke the scripts directly
+as long as `deno` is installed:
+
+```bash
+.bin/jira --help
+.bin/jira-query --format json --jql "project = ENG"
+```
+
+You can still fall back to `deno task jira …` or `deno task jira-query …` if you prefer
+to run the tasks explicitly.
 
 ### Query Issues
 

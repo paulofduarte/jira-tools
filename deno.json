@@ -15,7 +15,7 @@
     "test": "deno test --allow-env --allow-read --allow-write=./tmp",
     "fmt": "deno fmt",
     "lint": "deno lint",
-    "lint-md": "deno run --allow-read --allow-write --allow-net --allow-env --allow-sys=homedir npm:markdownlint-cli@^0.45.0 --config .markdownlint.json *.md",
+    "lint-md": "deno run --allow-read --allow-write --allow-net --allow-env --allow-sys=homedir,uid npm:markdownlint-cli@^0.45.0 --config .markdownlint.json *.md",
     "sbom": "deno run --allow-env --allow-read=deno.lock,src/version.ts --allow-run --allow-write scripts/generate_sbom_spdx.ts"
   },
   "imports": {

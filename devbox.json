@@ -4,10 +4,8 @@
     "deno"
   ],
   "shell": {
-    "scripts": {
-      "lint": "deno lint",
-      "fmt": "deno fmt",
-      "test": "deno task test"
-    }
+    "init_hook": [
+      "export PATH=$DEVBOX_PROJECT_ROOT/.bin:$PATH"
+    ]
   }
 }

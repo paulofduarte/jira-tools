@@ -40,6 +40,9 @@ semi-autonomous agents to extend the Jira tooling library.
 - Create reusable primitives inside `src/lib` whenever possible.
 - Use `createJiraCommand()` as the aggregation point for new subcommands.
 - Export any new helpers through `src/mod.ts` to keep the public surface cohesive.
+- For each new CLI command, add a matching executable script under `.bin/` and run
+  `git update-index --chmod=+x <script>` after staging but before committing so the
+  executable bit is recorded.
 
 ## Credentials Handling
 
