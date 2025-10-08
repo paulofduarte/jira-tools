@@ -95,8 +95,13 @@ Supported variables:
 - `JIRA_EMAIL` / `JIRA_USERNAME`
 - `JIRA_API_TOKEN` / `JIRA_PASSWORD`
 - `JIRA_PERSONAL_ACCESS_TOKEN` / `JIRA_PAT`
+- `JIRA_USE_ENHANCED_SEARCH`
 
 Place them in a `.env` file or pass via the environment. Use `--env-file` to point at custom paths.
+
+Set `JIRA_USE_ENHANCED_SEARCH=true` to opt into Atlassian's experimental Search & Reconcile
+endpoint. When the flag is unset (default), the CLI uses the stable `/rest/api/3/search` API to
+guarantee consistent results on every Jira tenant.
 
 ### Generating Jira Credentials
 

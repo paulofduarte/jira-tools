@@ -88,11 +88,23 @@ export class JiraQueryService {
       startAt = (typeof page.startAt === "number" ? page.startAt : request.startAt) + consumed;
       nextPageToken = page.nextPageToken ?? null;
 
-      const noResults = pageIssues.length === 0;
-      const hasMore = nextPageToken !== null && nextPageToken !== undefined;
-
-      if (!hasMore || noResults) {
+      if (pageIssues.length === 0) {
         break;
+      }
+
+      if (issues.length >= limit) {
+        break;
+      }
+
+      const hasNextToken = nextPageToken !== null && nextPageToken !== undefined;
+      const pageFilled = pageIssues.length === request.maxResults;
+      const totalKnown = typeof total === "number";
+      const fetchedAllKnown = totalKnown && issues.length >= Math.min(total, limit);
+
+      if (!hasNextToken) {
+        if (!pageFilled || fetchedAllKnown) {
+          break;
+        }
       }
     }
 

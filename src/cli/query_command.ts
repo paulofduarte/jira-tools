@@ -1,7 +1,7 @@
 import { Command } from "@cliffy/command";
 import { Secret } from "@cliffy/prompt";
 import { createQueryOptions, resolveJiraClientOptions } from "../config/jira.ts";
-import { loadEnvironment } from "../config/env.ts";
+import { loadEnvironment, readEnv } from "../config/env.ts";
 import {
   createJiraSearchAdapter,
   formatQueryResult,
@@ -255,10 +255,16 @@ export function createQueryCommand(
         expand: options.expand,
       });
 
+      const enhancedSearchEnv = readEnv("JIRA_USE_ENHANCED_SEARCH");
+      const useEnhancedSearch = enhancedSearchEnv
+        ? ["1", "true", "yes", "on"].includes(enhancedSearchEnv.toLowerCase())
+        : false;
+
       try {
         const adapter = createAdapter(clientOptions, {
           verbose: options.verbose,
           logger,
+          useEnhancedSearch,
         });
         const service = createService(adapter);
         const result = await service.runQuery(queryOptions);

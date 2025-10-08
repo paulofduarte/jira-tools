@@ -98,6 +98,45 @@ Deno.test("JiraQueryService respects maxResults limit", async () => {
   ]);
 });
 
+Deno.test("JiraQueryService paginates using startAt when nextPageToken is missing", async () => {
+  const firstPageIssues = Array.from(
+    { length: 100 },
+    (_, index) => createIssue(`TEST-${index + 1}`),
+  );
+  const secondPageIssues = Array.from(
+    { length: 20 },
+    (_, index) => createIssue(`TEST-${index + 101}`),
+  );
+
+  const adapter = createAdapter([
+    {
+      issues: firstPageIssues,
+      total: 120,
+      startAt: 0,
+      maxResults: 100,
+      nextPageToken: undefined,
+    },
+    {
+      issues: secondPageIssues,
+      total: 120,
+      startAt: 100,
+      maxResults: 20,
+      nextPageToken: undefined,
+    },
+  ]);
+
+  const service = new JiraQueryService(adapter);
+  const result = await service.runQuery({
+    jql: "project = TEST",
+    maxResults: 120,
+  });
+
+  assertEquals(result.fetched, 120);
+  assertEquals(result.total, 120);
+  assertEquals(result.issues[0].key, "TEST-1");
+  assertEquals(result.issues[result.issues.length - 1]?.key, "TEST-120");
+});
+
 Deno.test("JiraQueryService rejects empty JQL queries", async () => {
   const adapter = createAdapter([]);
   const service = new JiraQueryService(adapter);

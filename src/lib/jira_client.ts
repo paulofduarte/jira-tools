@@ -15,9 +15,17 @@ type EnhancedSearchResponse = {
   total?: number;
 };
 
+type StandardSearchResponse = {
+  issues?: Array<Record<string, unknown>>;
+  total?: number;
+  startAt?: number;
+  maxResults?: number;
+};
+
 export interface JiraSearchAdapterOptions {
   readonly verbose?: boolean;
   readonly logger?: Logger;
+  readonly useEnhancedSearch?: boolean;
 }
 
 type JiraJsAuthentication = NonNullable<
@@ -61,6 +69,57 @@ export function createJiraSearchAdapter(
   return {
     async search(request: JiraSearchRequest): Promise<JiraSearchResponse> {
       const log = logger.debug ?? logger.info ?? logger.error;
+      const useEnhancedSearch = adapterOptions.useEnhancedSearch ?? false;
+
+      const runStandardSearch = async (): Promise<JiraSearchResponse> => {
+        const response = await client.issueSearch.searchForIssuesUsingJql({
+          jql: request.jql,
+          fields: request.fields ? [...request.fields] : undefined,
+          expand: request.expand ? [...request.expand] : undefined,
+          startAt: request.startAt,
+          maxResults: request.maxResults,
+          failFast: false,
+        }) as unknown as StandardSearchResponse;
+        const issues = Array.isArray(response.issues)
+          ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
+          : [];
+        const total = typeof response.total === "number" ? response.total : issues.length;
+        const startAt = typeof response.startAt === "number" ? response.startAt : request.startAt;
+        const maxResults = typeof response.maxResults === "number"
+          ? response.maxResults
+          : request.maxResults;
+
+        return {
+          issues,
+          total,
+          startAt,
+          maxResults,
+          nextPageToken: null,
+        };
+      };
+
+      const runEnhancedSearch = async (): Promise<JiraSearchResponse> => {
+        const response = await client.issueSearch.searchForIssuesUsingJqlEnhancedSearch({
+          jql: request.jql,
+          fields: request.fields ? [...request.fields] : undefined,
+          expand: request.expand ? request.expand.join(",") : undefined,
+          maxResults: request.maxResults,
+          nextPageToken: request.nextPageToken ?? undefined,
+          failFast: false,
+        }) as unknown as EnhancedSearchResponse;
+        const issues = Array.isArray(response.issues)
+          ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
+          : [];
+        const total = typeof response.total === "number" ? response.total : issues.length;
+
+        return {
+          issues,
+          total,
+          startAt: request.startAt,
+          maxResults: request.maxResults,
+          nextPageToken: response.nextPageToken ?? null,
+        };
+      };
 
       if (adapterOptions.verbose) {
         log.call(
@@ -77,42 +136,42 @@ export function createJiraSearchAdapter(
       }
 
       try {
-        const response = await client.issueSearch.searchForIssuesUsingJqlEnhancedSearch({
-          jql: request.jql,
-          fields: request.fields ? [...request.fields] : undefined,
-          expand: request.expand ? request.expand.join(",") : undefined,
-          maxResults: request.maxResults,
-          nextPageToken: request.nextPageToken ?? undefined,
-          failFast: true,
-        }) as unknown as EnhancedSearchResponse;
-        const issues = Array.isArray(response.issues)
-          ? response.issues.map((issue) => issue as unknown as Record<string, unknown>)
-          : [];
-        const total = typeof response.total === "number" ? response.total : issues.length;
-        const startAt = request.startAt;
-        const maxResults = request.maxResults;
+        const search = async () => {
+          if (!useEnhancedSearch) {
+            return await runStandardSearch();
+          }
+
+          try {
+            return await runEnhancedSearch();
+          } catch (error) {
+            if (adapterOptions.verbose) {
+              log.call(
+                logger,
+                "[jira-tools] Enhanced search failed, retrying with legacy endpoint",
+                error,
+              );
+            }
+            return await runStandardSearch();
+          }
+        };
+
+        const result = await search();
 
         if (adapterOptions.verbose) {
           log.call(
             logger,
             "[jira-tools] Received JQL response",
             {
-              total,
-              fetched: issues.length,
-              startAt,
-              maxResults,
-              nextPageToken: response.nextPageToken ?? null,
+              total: result.total,
+              fetched: result.issues.length,
+              startAt: result.startAt,
+              maxResults: result.maxResults,
+              nextPageToken: result.nextPageToken ?? null,
             },
           );
         }
 
-        return {
-          issues,
-          total,
-          startAt,
-          maxResults,
-          nextPageToken: response.nextPageToken ?? null,
-        };
+        return result;
       } catch (error) {
         if (adapterOptions.verbose) {
           logger.error("[jira-tools] JQL request failed", error);

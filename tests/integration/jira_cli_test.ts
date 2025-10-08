@@ -109,6 +109,7 @@ Deno.test("jira-query command writes output and saves to file", async () => {
   assertEquals(capturedAdapterConfig, {
     verbose: false,
     logger: testLogger,
+    useEnhancedSearch: false,
   });
 });
 
