@@ -69,7 +69,7 @@ export function createJiraSearchAdapter(
   return {
     async search(request: JiraSearchRequest): Promise<JiraSearchResponse> {
       const log = logger.debug ?? logger.info ?? logger.error;
-      const useEnhancedSearch = adapterOptions.useEnhancedSearch ?? false;
+      const useEnhancedSearch = adapterOptions.useEnhancedSearch ?? true;
 
       const runStandardSearch = async (): Promise<JiraSearchResponse> => {
         const response = await client.issueSearch.searchForIssuesUsingJql({

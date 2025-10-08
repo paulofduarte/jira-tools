@@ -109,8 +109,62 @@ Deno.test("jira-query command writes output and saves to file", async () => {
   assertEquals(capturedAdapterConfig, {
     verbose: false,
     logger: testLogger,
-    useEnhancedSearch: false,
+    useEnhancedSearch: true,
   });
+});
+
+Deno.test("jira-query honours legacy search toggle", async () => {
+  let capturedUseEnhanced: boolean | undefined;
+  const command = createQueryCommand({
+    loadEnv: () => Promise.resolve(),
+    createAdapter: (_options, adapterConfig) => {
+      capturedUseEnhanced = adapterConfig?.useEnhancedSearch;
+      return {
+        search: (): Promise<JiraSearchResponse> =>
+          Promise.resolve({
+            issues: [],
+            total: 0,
+            startAt: 0,
+            maxResults: 0,
+          }),
+      };
+    },
+    createService: () => ({
+      runQuery(): Promise<JiraQueryResult> {
+        return Promise.resolve({
+          total: 0,
+          fetched: 0,
+          issues: [],
+        });
+      },
+    }),
+    formatResult: () =>
+      Promise.resolve({
+        payload: "",
+        fileExtension: "txt",
+        mimeType: "text/plain",
+        contentType: "text",
+      }),
+    writeStdout: () => Promise.resolve(),
+    writeFile: () => Promise.resolve(),
+    logger: console,
+  });
+
+  command.name("jira-query");
+
+  await command.parse([
+    "--jql",
+    "project = TEST",
+    "--host",
+    "https://example.atlassian.net",
+    "--email",
+    "user@example.com",
+    "--api-token",
+    "token-123",
+    "--legacy-search",
+  ]);
+
+  assertEquals(capturedUseEnhanced, false);
 });
 
 Deno.test("jira-query command hides stack trace unless verbose", async () => {

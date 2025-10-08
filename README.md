@@ -85,7 +85,9 @@ The command prints the output to STDOUT (unless `--no-stdout` is set) and saves 
 appropriately named file when `--output` or `--output-dir` is provided. Use `--verbose`
 to stream Jira request/response metadata and keep stack traces for failing calls. For
 security, you can omit sensitive values to be prompted interactively (e.g.
-`--api-token`).
+`--api-token`). Add `--legacy-search` when you need to force the soon-to-be-removed
+`/rest/api/3/search` endpoint for a single run, or `--enhanced-search` to explicitly opt back
+in after disabling it via environment variables.
 
 ### Environment Variables & `.env`
 
@@ -99,9 +101,11 @@ Supported variables:
 
 Place them in a `.env` file or pass via the environment. Use `--env-file` to point at custom paths.
 
-Set `JIRA_USE_ENHANCED_SEARCH=true` to opt into Atlassian's experimental Search & Reconcile
-endpoint. When the flag is unset (default), the CLI uses the stable `/rest/api/3/search` API to
-guarantee consistent results on every Jira tenant.
+`jira-query` now uses Atlassian's Search & Reconcile endpoint (`/rest/api/3/search/jql`) by default.
+Set `JIRA_USE_ENHANCED_SEARCH=false` (or `0`, `off`, etc.) to force the legacy
+`/rest/api/3/search` behaviour across the command. You can also toggle the endpoint dynamically
+with the `--enhanced-search` and `--legacy-search` CLI flags—handy when you need to override an
+environment-wide default for a single invocation.
 
 ### Generating Jira Credentials
 
@@ -112,11 +116,15 @@ guarantee consistent results on every Jira tenant.
 - **Jira Personal Access Token (Cloud):** Follow the official guide for
   [personal access tokens](https://support.atlassian.com/jira-cloud-administration/docs/create-personal-access-tokens/)
   and grant only the scopes you need:
-  - _Classic scopes_: `read:jira-work` is sufficient for issue queries; add `read:jira-user`
+  - _Classic scopes_: `read:jira-work` remains the primary requirement; add `read:jira-user`
     if you need assignee/user metadata.
-  - _Granular scopes_: choose the **Jira REST API (read)** preset or manually include
-    `read:issue:jira` and `read:project:jira` (add `read:user:jira` when user details are
-    required). Avoid broader scopes unless you truly need them.
+  - _Granular scopes_: Atlassian's Search & Reconcile API reads additional issue metadata. Start
+    with `read:jira-work`, then add `read:issue:jira`, `read:project:jira`,
+    `read:issue-details:jira`, `read:issue-meta:jira`, and `read:field-configuration:jira`
+    (include `read:user:jira` when user details are required). These match the scopes documented in
+    the [Issue search API reference](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/).
+    Tokens lacking those scopes may see `/rest/api/3/search` deactivation errors or receive
+    incomplete results.
 - **Self-managed instances:** For Jira Data Center / Server, create a PAT from your profile
   or ask your administrator (see the
   [Data Center documentation](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)).

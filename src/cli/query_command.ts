@@ -31,6 +31,8 @@ interface QueryOptions {
   envFile?: string;
   noStdout?: boolean;
   verbose?: boolean;
+  enhancedSearch?: boolean;
+  legacySearch?: boolean;
 }
 
 const FORMAT_COMPLETIONS = ["json", "csv", "text", "excel"];
@@ -221,6 +223,14 @@ export function createQueryCommand(
       "Enable verbose logging of Jira API calls and include stack traces on failure.",
       { default: false },
     )
+    .option(
+      "--enhanced-search",
+      "Force use of Atlassian's Search & Reconcile endpoint.",
+    )
+    .option(
+      "--legacy-search",
+      "Force use of the legacy /rest/api/3/search endpoint.",
+    )
     .complete("format", () => FORMAT_COMPLETIONS)
     .action(async (options: QueryOptions) => {
       await loadEnv(options.envFile ?? ".env");
@@ -255,10 +265,29 @@ export function createQueryCommand(
         expand: options.expand,
       });
 
+      if (options.enhancedSearch && options.legacySearch) {
+        throw new Error("Specify either --enhanced-search or --legacy-search, not both.");
+      }
+
       const enhancedSearchEnv = readEnv("JIRA_USE_ENHANCED_SEARCH");
-      const useEnhancedSearch = enhancedSearchEnv
-        ? ["1", "true", "yes", "on"].includes(enhancedSearchEnv.toLowerCase())
-        : false;
+      const parseBoolean = (value: string): boolean | undefined => {
+        const normalized = value.trim().toLowerCase();
+        if (["1", "true", "yes", "on"].includes(normalized)) {
+          return true;
+        }
+        if (["0", "false", "no", "off"].includes(normalized)) {
+          return false;
+        }
+        return undefined;
+      };
+
+      const envEnhancedSearch = enhancedSearchEnv ? parseBoolean(enhancedSearchEnv) : undefined;
+
+      const useEnhancedSearch = options.enhancedSearch === true
+        ? true
+        : options.legacySearch === true
+        ? false
+        : envEnhancedSearch ?? true;
 
       try {
         const adapter = createAdapter(clientOptions, {
