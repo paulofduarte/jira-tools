@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-deno task -q jira $@
+deno task -q jira "$@"
