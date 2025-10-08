@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "@std/assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 import { createQueryOptions, resolveJiraClientOptions } from "../../src/config/jira.ts";
 
 Deno.test("resolveJiraClientOptions prefers personal access token when provided", () => {

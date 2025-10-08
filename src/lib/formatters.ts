@@ -1,4 +1,4 @@
-import { stringify } from "@std/csv/stringify.ts";
+import { stringify } from "@std/csv";
 import type { JiraIssueData, JiraQueryResult } from "./types.ts";
 
 type ExcelJSImport = typeof import("@exceljs");

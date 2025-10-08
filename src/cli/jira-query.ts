@@ -1,4 +1,4 @@
-import { Command } from "@cliffy/command/mod.ts";
+import { Command } from "@cliffy/command";
 import { createQueryCommand } from "./query_command.ts";
 import { VERSION } from "../version.ts";
 

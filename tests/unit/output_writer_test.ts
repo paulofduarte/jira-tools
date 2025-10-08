@@ -1,5 +1,5 @@
-import { assertEquals } from "@std/assert/mod.ts";
-import { stub } from "@std/testing/mock.ts";
+import { assertEquals } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { writeToFile, writeToStdout } from "../../src/lib/output_writer.ts";
 
 const textResult = {

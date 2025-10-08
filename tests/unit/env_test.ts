@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import { loadEnvironment, readEnv } from "../../src/config/env.ts";
 
 Deno.test("loadEnvironment loads .env file when present", async () => {

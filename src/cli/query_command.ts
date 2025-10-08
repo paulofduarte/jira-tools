@@ -1,5 +1,5 @@
-import { Command } from "@cliffy/command/mod.ts";
-import { Secret } from "@cliffy/prompt/secret.ts";
+import { Command } from "@cliffy/command";
+import { Secret } from "@cliffy/prompt";
 import { createQueryOptions, resolveJiraClientOptions } from "../config/jira.ts";
 import { loadEnvironment } from "../config/env.ts";
 import {
@@ -13,10 +13,7 @@ import {
   writeToFile,
   writeToStdout,
 } from "../mod.ts";
-import { join } from "@std/path/join.ts";
-import { resolve } from "@std/path/resolve.ts";
-import { extname } from "@std/path/extname.ts";
-
+import { extname, join, resolve } from "@std/path";
 interface QueryOptions {
   host?: string;
   email?: string;

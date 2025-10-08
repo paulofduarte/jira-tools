@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
 import { JiraQueryService } from "../../src/lib/query_service.ts";
 import type {
   JiraQueryOptions,

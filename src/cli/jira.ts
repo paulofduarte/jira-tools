@@ -1,5 +1,6 @@
-import { Command } from "@cliffy/command/mod.ts";
-import { CompletionsCommand } from "@cliffy/command/completions/mod.ts";
+import { Command } from "@cliffy/command";
+import { CompletionsCommand } from "@cliffy/command/completions";
+import { HelpCommand } from "@cliffy/command/help";
 import { createQueryCommand } from "./query_command.ts";
 import { VERSION } from "../version.ts";
 
@@ -12,7 +13,8 @@ export function createJiraCommand(): Command {
     .version(VERSION)
     .description("CLI tools for interacting with Jira.")
     .command("query", createQueryCommand())
-    .command("completions", new CompletionsCommand());
+    .command("completions", new CompletionsCommand())
+    .command("help", new HelpCommand().global());
 
   root.action(async () => {
     await root.showHelp();

@@ -1,5 +1,5 @@
-import { ensureDir } from "@std/fs/ensure_dir.ts";
-import { dirname } from "@std/path/dirname.ts";
+import { ensureDir } from "@std/fs";
+import { dirname } from "@std/path";
 
 import type { FormatResult } from "./formatters.ts";
 

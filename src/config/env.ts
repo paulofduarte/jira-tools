@@ -1,5 +1,5 @@
-import { exists } from "@std/fs/exists.ts";
-import { load } from "@dotenv";
+import { exists } from "@std/fs";
+import { load } from "@std/dotenv";
 
 /**
  * Loads environment variables from the provided file when available.

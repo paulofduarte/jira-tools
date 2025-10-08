@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert/mod.ts";
+import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
 import { formatQueryResult } from "../../src/lib/formatters.ts";
 import type { JiraQueryResult } from "../../src/lib/types.ts";
 

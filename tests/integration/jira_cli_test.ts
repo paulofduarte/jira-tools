@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertRejects } from "@std/assert/mod.ts";
+import { assertEquals, assertExists, assertRejects } from "@std/assert";
 import { createQueryCommand } from "../../src/cli/query_command.ts";
 import type {
   JiraQueryOptions,
