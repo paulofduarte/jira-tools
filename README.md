@@ -27,7 +27,7 @@ details.
    devbox shell
    ```
 
-   This pulls the pinned `deno`, `node`, and helper tools declared in `devbox.json`.
+   This pulls the pinned `deno` runtime declared in `devbox.json`.
 
 ## Project Layout
 

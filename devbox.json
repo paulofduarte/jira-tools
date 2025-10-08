@@ -1,15 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/main/.schema/devbox.schema.json",
   "packages": [
-    "deno",
-    "nodejs_20",
-    "jq"
+    "deno"
   ],
   "shell": {
-    "init_hook": [
-      "export DENO_INSTALL=/usr/local",
-      "export PATH=$DENO_INSTALL/bin:$PATH"
-    ],
     "scripts": {
       "lint": "deno lint",
       "fmt": "deno fmt",
